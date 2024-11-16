@@ -13,4 +13,6 @@ class UsuarioOut(BaseModel):
     email: str
     role: str
 
-
+class UsuarioLogin(BaseModel):
+    matricula: str
+    senha: str
