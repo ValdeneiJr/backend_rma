@@ -17,8 +17,8 @@ async def login_para_token(form_dados_login: OAuth2PasswordRequestForm = Depends
     try:
         token = await login_usuario(dados_login)
     except LoginInvalidoException as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e.mensagem))
     except ErroInternoException as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e.mensagem))
 
-    return {"token": token}
+    return token

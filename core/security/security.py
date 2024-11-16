@@ -47,7 +47,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     return usuario
 
 def gerar_token(data: TokenData):
-    exp = datetime.utcnow() + timedelta(minutes=TEMPO_EXP)
+    exp = datetime.utcnow() + timedelta(hours=TEMPO_EXP)
     exp = int(exp.timestamp())
 
     data_token = data.to_dict()
@@ -57,6 +57,6 @@ def gerar_token(data: TokenData):
 
     return encoded_token
 
-def validar_role(usuario: Usuario, required_role: RoleEnum):
+def validar_role(usuario, required_role):
     if not RoleEnum(usuario.role) == required_role.value:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Usuario sem permissao")

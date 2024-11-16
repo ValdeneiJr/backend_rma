@@ -20,6 +20,6 @@ async def login_usuario(dados_login: UsuarioLogin):
     if not verificar_senha(dados_login.senha, usuario.hash_senha):
         raise LoginInvalidoException()
 
-    encoded_token = gerar_token(TokenData(matricula=usuario.matricula, role=usuario.role))
+    encoded_token = gerar_token(TokenData(sub=usuario.matricula, role=usuario.role))
 
     return Token(access_token=encoded_token, token_type="Bearer")

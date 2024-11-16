@@ -1,17 +1,15 @@
 from pydantic import BaseModel
-from typing_extensions import Optional
-
 
 class Token(BaseModel):
     access_token: str
     token_type: str
 
 class TokenData(BaseModel):
-    matricula: Optional[str] = None
-    role: Optional[str] = None
+    sub: str
+    role: str
 
     def to_dict(self):
         return {
-            'matricula': self.matricula,
+            'sub': self.sub,
             'role': self.role,
         }
