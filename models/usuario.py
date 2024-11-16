@@ -15,7 +15,7 @@ class Usuario(Model):
     role = fields.CharEnumField(RoleEnum, null=False)
     hash_senha = fields.TextField(null=False)
     status = fields.BooleanField(default=True)
-    data_criacao = fields.DateField(auto_now_add=True)
+    data_criacao = fields.DateField(null=False)
 
     criador: fields.ForeignKeyNullableRelation["Usuario"] = (
         fields.ForeignKeyField("models.Usuario", related_name="usuarios_criados", null=True))

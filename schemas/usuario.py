@@ -8,10 +8,12 @@ class UsuarioIn(BaseModel):
     senha: str
 
 class UsuarioOut(BaseModel):
+    id: str
     matricula: str
     nome: str
     email: str
     role: str
+    status: bool
 
 class UsuarioLogin(BaseModel):
     matricula: str

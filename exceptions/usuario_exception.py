@@ -9,3 +9,7 @@ class LoginInvalidoException(Exception):
 class MatriculaJaCadastradaException(Exception):
     def __init__(self):
         self.mensagem = "Matricula ja cadastrada"
+
+class UsuarioNaoEncontradoException(Exception):
+    def __init__(self):
+        self.mensagem = "Usuario nao encontrado"

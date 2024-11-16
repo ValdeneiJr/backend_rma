@@ -1,13 +1,31 @@
 import uuid
+from datetime import date
 
 from tortoise.exceptions import BaseORMException
 
 from core.security.hashing import hashing_senha
-from exceptions.usuario_exception import EmailJaCadastradoException, MatriculaJaCadastradaException
+from exceptions.usuario_exception import EmailJaCadastradoException, MatriculaJaCadastradaException, \
+    UsuarioNaoEncontradoException
 from exceptions.erro_interno_exception import ErroInternoException
 from models.usuario import RoleEnum, Usuario
 from schemas.usuario import UsuarioIn, UsuarioOut
 
+async def buscar_usuario(id_usuario):
+    try:
+        usuario = await Usuario.filter(id=id_usuario).first()
+        if not usuario:
+            raise UsuarioNaoEncontradoException()
+    except BaseORMException:
+        raise ErroInternoException()
+
+    return UsuarioOut(
+        id= usuario.id,
+        matricula= usuario.matricula,
+        nome=usuario.nome,
+        email=usuario.email,
+        role=usuario.role,
+        status= usuario.status
+    )
 
 async def criar_usuario(dados_usuario: UsuarioIn, admin: Usuario):
 
@@ -20,6 +38,7 @@ async def criar_usuario(dados_usuario: UsuarioIn, admin: Usuario):
     id_ = str(uuid.uuid4())
     role = RoleEnum(dados_usuario.role)
     hash_senha = hashing_senha(dados_usuario.senha)
+    data = date.today()
 
     usuario = Usuario(
         id= id_,
@@ -28,6 +47,7 @@ async def criar_usuario(dados_usuario: UsuarioIn, admin: Usuario):
         email=dados_usuario.email,
         role=role,
         hash_senha=hash_senha,
+        data_criacao=data,
         criador = admin
     )
 
@@ -38,10 +58,12 @@ async def criar_usuario(dados_usuario: UsuarioIn, admin: Usuario):
         raise ErroInternoException()
 
     return UsuarioOut(
-        matricula= dados_usuario.matricula,
-        nome=dados_usuario.nome,
-        email=dados_usuario.email,
-        role=role,
+        id= usuario.id,
+        matricula= usuario.matricula,
+        nome=usuario.nome,
+        email=usuario.email,
+        role=usuario.role,
+        status= usuario.status
     )
 
 async def email_cadastrado(email):
