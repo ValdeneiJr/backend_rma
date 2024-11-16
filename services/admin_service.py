@@ -9,7 +9,7 @@ from models.usuario import RoleEnum, Usuario
 from schemas.usuario import UsuarioIn, UsuarioOut
 
 
-async def criar_usuario(dados_usuario: UsuarioIn):
+async def criar_usuario(dados_usuario: UsuarioIn, admin: Usuario):
 
     if await email_cadastrado(dados_usuario.email):
         raise EmailJaCadastradoException()
@@ -27,7 +27,8 @@ async def criar_usuario(dados_usuario: UsuarioIn):
         nome=dados_usuario.nome,
         email=dados_usuario.email,
         role=role,
-        hash_senha=hash_senha
+        hash_senha=hash_senha,
+        criador = admin
     )
 
     try:
