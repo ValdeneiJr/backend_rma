@@ -5,7 +5,7 @@ from tortoise.exceptions import BaseORMException
 
 from core.security.hashing import hashing_senha
 from exceptions.usuario_exception import EmailJaCadastradoException, MatriculaJaCadastradaException, \
-    UsuarioNaoEncontradoException
+    UsuarioNaoEncontradoException, AdminDesativacaoException
 from exceptions.erro_interno_exception import ErroInternoException
 from models.usuario import RoleEnum, Usuario
 from schemas.usuario import UsuarioIn, UsuarioOut
@@ -65,6 +65,20 @@ async def criar_usuario(dados_usuario: UsuarioIn, admin: Usuario):
         role=usuario.role,
         status= usuario.status
     )
+
+async def desativar_usuario(admin, id_usuario):
+    try:
+        usuario = await Usuario.filter(id=id_usuario).first()
+        if not usuario:
+            raise UsuarioNaoEncontradoException()
+
+        if usuario.id == admin.id:
+            raise AdminDesativacaoException()
+
+        usuario.status = False
+        await usuario.save()
+    except BaseORMException:
+        raise ErroInternoException()
 
 async def email_cadastrado(email):
     try:

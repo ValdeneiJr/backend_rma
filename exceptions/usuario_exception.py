@@ -13,3 +13,7 @@ class MatriculaJaCadastradaException(Exception):
 class UsuarioNaoEncontradoException(Exception):
     def __init__(self):
         self.mensagem = "Usuario nao encontrado"
+
+class AdminDesativacaoException(Exception):
+    def __init__(self):
+        self.mensagem = "Usuario admin não pode se desativar"
