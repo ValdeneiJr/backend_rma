@@ -5,8 +5,8 @@ from core.security.security import gerar_token
 from exceptions.erro_interno_exception import ErroInternoException
 from exceptions.usuario_exception import LoginInvalidoException
 from models import Usuario
-from schemas.token import TokenData, Token
-from schemas.usuario import UsuarioLogin
+from schemas.token_schema import TokenData, Token
+from schemas.usuario_schema import UsuarioLogin
 
 async def login_usuario(dados_login: UsuarioLogin):
     try:

@@ -9,7 +9,7 @@ from starlette import status
 
 from core.config import SECRET_KEY, ALGORITHM, TEMPO_EXP
 from models import Usuario
-from schemas.token import TokenData
+from schemas.token_schema import TokenData
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
 

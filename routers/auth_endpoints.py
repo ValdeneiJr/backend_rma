@@ -5,8 +5,8 @@ from starlette import status
 
 from exceptions.erro_interno_exception import ErroInternoException
 from exceptions.usuario_exception import LoginInvalidoException
-from schemas.token import Token
-from schemas.usuario import UsuarioLogin
+from schemas.token_schema import Token
+from schemas.usuario_schema import UsuarioLogin
 from services.auth_service import login_usuario
 
 auth_router = APIRouter(prefix="/auth")

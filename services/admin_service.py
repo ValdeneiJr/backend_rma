@@ -7,8 +7,10 @@ from core.security.hashing import hashing_senha
 from exceptions.usuario_exception import EmailJaCadastradoException, MatriculaJaCadastradaException, \
     UsuarioNaoEncontradoException, AdminDesativacaoException
 from exceptions.erro_interno_exception import ErroInternoException
+from mappers.usuario_mapper import usuario_model_usuario_out
 from models.usuario import RoleEnum, Usuario
-from schemas.usuario import UsuarioIn, UsuarioOut
+from schemas.usuario_schema import UsuarioIn, UsuarioOut, UsuarioUpdate
+
 
 async def buscar_usuario(id_usuario):
     try:
@@ -65,6 +67,22 @@ async def criar_usuario(dados_usuario: UsuarioIn, admin: Usuario):
         role=usuario.role,
         status= usuario.status
     )
+
+async def atualizar_usuario(novos_dados: UsuarioUpdate) -> UsuarioOut:
+    atts = ['nome', 'email', 'role']
+    try:
+        usuario = await Usuario.filter(id=novos_dados.id).first()
+
+        if not usuario:
+            raise UsuarioNaoEncontradoException()
+        for att in atts:
+            setattr(usuario, att, getattr(novos_dados, att))
+        await usuario.save()
+    except BaseORMException as e:
+        raise ErroInternoException()
+
+    usuario_atualizado = usuario_model_usuario_out(usuario)
+    return usuario_atualizado
 
 async def desativar_usuario(admin, id_usuario):
     try:

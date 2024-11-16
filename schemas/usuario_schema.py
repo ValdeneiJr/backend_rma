@@ -18,3 +18,9 @@ class UsuarioOut(BaseModel):
 class UsuarioLogin(BaseModel):
     matricula: str
     senha: str
+
+class UsuarioUpdate(BaseModel):
+    id: str
+    nome: str
+    email: str
+    role: str
