@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel, field_validator
 
-from models.solicitacao import ProdutosEnum, StatusEnum
+from models.solicitacao import ProdutosEnum, StatusEnum, ResultAnaliseEnum
 
 
 def validacao_nf(valor):
@@ -30,6 +30,13 @@ def validacao_status(valor):
         raise ValueError(
         f"O valor '{valor}' não é válido. Deve ser um dos seguintes: {[status.value for status in StatusEnum]}")
 
+def validacao_resultado_analise(valor):
+    try:
+        return ResultAnaliseEnum(valor)
+    except ValueError:
+        raise ValueError(
+        f"O valor '{valor}' não é válido. Deve ser um dos seguintes: {[resultado.value for resultado in ResultAnaliseEnum]}")
+
 class SolicitacaoIn(BaseModel):
     num_nf: str
     produto: str
@@ -54,6 +61,7 @@ class SolicitacaoBaseOut(BaseModel):
     data_criacao: date
     num_nf: str
     produto: str
+    num_serie_produto: str
     descricao_defeito: str
 
 class SolicitacaoUpdate(BaseModel):
@@ -79,3 +87,23 @@ class SolicitacaoUpdate(BaseModel):
     @field_validator("status")
     def validar_status(cls, value):
         return validacao_status(value)
+
+class SolicitacaoAnalise(BaseModel):
+    id: str
+    descricao_analise: str
+    resultado_analise: str
+
+    @field_validator("resultado_analise")
+    def validar_resultado_analise(cls, value):
+        return validacao_resultado_analise(value)
+
+class SolicitacaoOut(BaseModel):
+    id: str
+    status: str
+    data_criacao: date
+    num_nf: str
+    produto: str
+    num_serie_produto: str
+    descricao_defeito: str
+    descricao_analise: str
+    resultado_analise: str

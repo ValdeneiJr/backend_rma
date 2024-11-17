@@ -10,3 +10,6 @@ class SolicitacaoStatusException(Exception):
     def __init__(self):
         self.mensagem = "Neste estagio o status da solicitação pode ser atualizado apenas para 'em_analise'"
 
+class SolicitacaoAnaliseException(Exception):
+    def __init__(self):
+        self.mensagem = "Apenas o funcionario responsavel pela analise pode preencher estes dados"

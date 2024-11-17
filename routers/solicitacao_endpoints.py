@@ -5,10 +5,11 @@ from starlette import status
 from core.security.security import get_current_user, RoleEnum, validar_role
 from exceptions.erro_interno_exception import ErroInternoException
 from exceptions.solicitacao_exception import SolicitacaoJaCadastradaException, SolicitacaoNaoEncontradaException, \
-    SolicitacaoStatusException
+    SolicitacaoStatusException, SolicitacaoAnaliseException
 from models import Usuario
-from schemas.solicitacao_schema import SolicitacaoIn, SolicitacaoBaseOut, SolicitacaoUpdate
-from services.solicitacao_service import criar_solicitacao, atualizar_solicitacao
+from schemas.solicitacao_schema import SolicitacaoIn, SolicitacaoBaseOut, SolicitacaoUpdate, SolicitacaoOut, \
+    SolicitacaoAnalise
+from services.solicitacao_service import criar_solicitacao, atualizar_solicitacao, adicionar_analise
 
 solicitacao_router = APIRouter(prefix='/request')
 
@@ -33,6 +34,20 @@ async def update_request(novos_dados: SolicitacaoUpdate, usuario_corrente: Usuar
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e.mensagem))
     except SolicitacaoStatusException as e:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e.mensagem))
+    except ErroInternoException as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e.mensagem))
+
+    return solicitacao
+
+@solicitacao_router.patch("/analysis", status_code=status.HTTP_200_OK, response_model=SolicitacaoOut)
+async def insert_analysis(dados_analise: SolicitacaoAnalise, usuario_corrente: Usuario = Depends(get_current_user)):
+    validar_role(usuario_corrente, RoleEnum.FUNC)
+    try:
+        solicitacao = await adicionar_analise(dados_analise, usuario_corrente)
+    except SolicitacaoNaoEncontradaException as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e.mensagem))
+    except SolicitacaoAnaliseException as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e.mensagem))
     except ErroInternoException as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e.mensagem))
 

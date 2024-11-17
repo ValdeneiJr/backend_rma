@@ -6,11 +6,11 @@ from tortoise.exceptions import BaseORMException
 
 from exceptions.erro_interno_exception import ErroInternoException
 from exceptions.solicitacao_exception import SolicitacaoJaCadastradaException, SolicitacaoNaoEncontradaException, \
-    SolicitacaoStatusException
-from mappers.solicitacao_mapper import sol_model_to_base_out
+    SolicitacaoStatusException, SolicitacaoAnaliseException
+from mappers.solicitacao_mapper import sol_model_to_base_out, sol_model_to_out
 from models import Usuario
-from models.solicitacao import Solicitacao, ProdutosEnum, StatusEnum
-from schemas.solicitacao_schema import SolicitacaoIn, SolicitacaoBaseOut, SolicitacaoUpdate
+from models.solicitacao import Solicitacao, ProdutosEnum, StatusEnum, ResultAnaliseEnum
+from schemas.solicitacao_schema import SolicitacaoIn, SolicitacaoBaseOut, SolicitacaoUpdate, SolicitacaoAnalise
 
 
 async def criar_solicitacao(dados_sol: SolicitacaoIn, usuario: Usuario) -> SolicitacaoBaseOut:
@@ -76,6 +76,34 @@ async def atualizar_solicitacao(novos_dados: SolicitacaoUpdate, usuario: Usuario
     solicitacao_atualizada = sol_model_to_base_out(solicitacao)
 
     return solicitacao_atualizada
+
+async def adicionar_analise(dados_analise: SolicitacaoAnalise, usuario: Usuario):
+    try:
+        solicitacao = await Solicitacao.filter(id=dados_analise.id).first()
+
+        if not solicitacao:
+            raise SolicitacaoNaoEncontradaException()
+
+        if solicitacao.resp_analise_id != usuario.id:
+            raise SolicitacaoAnaliseException()
+
+        setattr(solicitacao, 'descricao_analise', dados_analise.descricao_analise)
+        setattr(solicitacao, 'resultado_analise', ResultAnaliseEnum(dados_analise.resultado_analise))
+
+        if dados_analise.resultado_analise == 'troca':
+            setattr(solicitacao, 'status', StatusEnum.PROCESSAMENTO_TROCA)
+        elif dados_analise.resultado_analise == 'reembolso':
+            setattr(solicitacao, 'status', StatusEnum.PROCESSAMENTO_REEMBOLSO)
+        elif dados_analise.resultado_analise == 'reparo':
+            setattr(solicitacao, 'status', StatusEnum.EM_REPARO)
+
+        await solicitacao.save()
+
+    except BaseORMException as e:
+        raise ErroInternoException()
+
+    return sol_model_to_out(solicitacao)
+
 
 async def verificar_sol_existente(num_nf: str, produto: ProdutosEnum, num_serie: str):
     try:
