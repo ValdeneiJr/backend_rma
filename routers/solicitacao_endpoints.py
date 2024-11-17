@@ -17,7 +17,7 @@ solicitacao_router = APIRouter(prefix='/request')
 
 @solicitacao_router.post('/create', status_code=status.HTTP_201_CREATED, response_model=SolicitacaoBaseOut)
 async def create_request(dados_sol: SolicitacaoIn, usuario_corrente: Usuario = Depends(get_current_user)):
-    validar_role(usuario_corrente, RoleEnum.FUNC)
+    validar_role(usuario_corrente, [RoleEnum.FUNC])
     try:
         solicitacao = await criar_solicitacao(dados_sol, usuario_corrente)
     except SolicitacaoJaCadastradaException as e:
@@ -29,7 +29,7 @@ async def create_request(dados_sol: SolicitacaoIn, usuario_corrente: Usuario = D
 
 @solicitacao_router.patch("/update", status_code=status.HTTP_200_OK, response_model=SolicitacaoBaseOut)
 async def update_request(novos_dados: SolicitacaoUpdate, usuario_corrente: Usuario = Depends(get_current_user)):
-    validar_role(usuario_corrente, RoleEnum.FUNC)
+    validar_role(usuario_corrente, [RoleEnum.FUNC])
     try:
         solicitacao = await atualizar_solicitacao(novos_dados, usuario_corrente)
     except SolicitacaoNaoEncontradaException as e:
@@ -43,7 +43,7 @@ async def update_request(novos_dados: SolicitacaoUpdate, usuario_corrente: Usuar
 
 @solicitacao_router.patch("/analysis", status_code=status.HTTP_200_OK, response_model=SolicitacaoOut)
 async def insert_analysis(dados_analise: SolicitacaoAnalise, usuario_corrente: Usuario = Depends(get_current_user)):
-    validar_role(usuario_corrente, RoleEnum.FUNC)
+    validar_role(usuario_corrente, [RoleEnum.FUNC])
     try:
         solicitacao = await adicionar_analise(dados_analise, usuario_corrente)
     except SolicitacaoNaoEncontradaException as e:
@@ -57,7 +57,7 @@ async def insert_analysis(dados_analise: SolicitacaoAnalise, usuario_corrente: U
 
 @solicitacao_router.patch("/finalize/{id_sol}", status_code=status.HTTP_200_OK, response_model=SolicitacaoOut)
 async def close_request(id_sol: str, usuario_corrente: Usuario = Depends(get_current_user)):
-    validar_role(usuario_corrente, RoleEnum.FUNC)
+    validar_role(usuario_corrente, [RoleEnum.FUNC])
     try:
         solicitacao = await concluir_solicitacao(id_sol, usuario_corrente)
     except SolicitacaoNaoEncontradaException as e:
@@ -73,7 +73,7 @@ async def close_request(id_sol: str, usuario_corrente: Usuario = Depends(get_cur
 
 @solicitacao_router.get("/{id_sol}", status_code=status.HTTP_200_OK, response_model=SolicitacaoOut)
 async def get_request(id_sol: str, usuario_corrente: Usuario = Depends(get_current_user)):
-    validar_role(usuario_corrente, RoleEnum.FUNC)
+    validar_role(usuario_corrente, [RoleEnum.FUNC, RoleEnum.SUP])
     try:
         solicitacao = await buscar_solicitacao(id_sol)
     except SolicitacaoNaoEncontradaException as e:

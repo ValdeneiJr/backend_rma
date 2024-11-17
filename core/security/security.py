@@ -57,6 +57,6 @@ def gerar_token(data: TokenData):
 
     return encoded_token
 
-def validar_role(usuario, required_role):
-    if not RoleEnum(usuario.role) == required_role.value:
+def validar_role(usuario, required_roles):
+    if not RoleEnum(usuario.role) in required_roles:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Usuario sem permissao")

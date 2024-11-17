@@ -14,7 +14,7 @@ admin_router = APIRouter(prefix="/admin")
 
 @admin_router.post("/create/user", status_code=status.HTTP_201_CREATED, response_model=UsuarioOut)
 async def create_user(dados_usuario: UsuarioIn, usuario_corrente: Usuario = Depends(get_current_user)):
-    validar_role(usuario_corrente, RoleEnum.ADMIN)
+    validar_role(usuario_corrente, [RoleEnum.ADMIN])
     try:
         usuario = await criar_usuario(dados_usuario, usuario_corrente)
     except (EmailJaCadastradoException, MatriculaJaCadastradaException) as e:
@@ -26,7 +26,7 @@ async def create_user(dados_usuario: UsuarioIn, usuario_corrente: Usuario = Depe
 
 @admin_router.patch("/update/user")
 async def update_user(dados_atualizados: UsuarioUpdate, usuario_corrente: Usuario = Depends(get_current_user)):
-    validar_role(usuario_corrente, RoleEnum.ADMIN)
+    validar_role(usuario_corrente, [RoleEnum.ADMIN])
     try:
         usuario_atualizado: UsuarioOut = await atualizar_usuario(dados_atualizados)
     except UsuarioNaoEncontradoException as e:
@@ -42,7 +42,7 @@ async def update_user(dados_atualizados: UsuarioUpdate, usuario_corrente: Usuari
 
 @admin_router.patch("/deactivate/user/{id_usuario}", status_code=status.HTTP_204_NO_CONTENT)
 async def deactivate_user(id_usuario: str, usuario_corrente: Usuario = Depends(get_current_user)):
-    validar_role(usuario_corrente, RoleEnum.ADMIN)
+    validar_role(usuario_corrente, [RoleEnum.ADMIN])
     try:
         await desativar_usuario(usuario_corrente, id_usuario)
     except UsuarioNaoEncontradoException as e:
@@ -54,7 +54,7 @@ async def deactivate_user(id_usuario: str, usuario_corrente: Usuario = Depends(g
 
 @admin_router.get("/user/{id_usuario}", status_code=status.HTTP_200_OK, response_model=UsuarioOut)
 async def get_user(id_usuario: str, usuario_corrente: Usuario = Depends(get_current_user)):
-    validar_role(usuario_corrente, RoleEnum.ADMIN)
+    validar_role(usuario_corrente, [RoleEnum.ADMIN])
     try:
         usuario = await buscar_usuario(id_usuario)
     except UsuarioNaoEncontradoException as e:
