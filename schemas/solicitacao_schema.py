@@ -1,9 +1,10 @@
 from datetime import date
+from typing import Optional
 
 from pydantic import BaseModel, field_validator
-from tortoise.fields import DateField
 
-from models.solicitacao import ProdutosEnum
+from models.solicitacao import ProdutosEnum, StatusEnum
+
 
 def validacao_nf(valor):
     if len(valor) != 15 or not valor.isdigit():
@@ -21,6 +22,13 @@ def validacao_produto(valor):
     except ValueError:
         raise ValueError(
         f"O valor '{valor}' não é válido. Deve ser um dos seguintes: {[produto.value for produto in ProdutosEnum]}")
+
+def validacao_status(valor):
+    try:
+        return StatusEnum(valor)
+    except ValueError:
+        raise ValueError(
+        f"O valor '{valor}' não é válido. Deve ser um dos seguintes: {[status.value for status in StatusEnum]}")
 
 class SolicitacaoIn(BaseModel):
     num_nf: str
@@ -48,3 +56,26 @@ class SolicitacaoBaseOut(BaseModel):
     produto: str
     descricao_defeito: str
 
+class SolicitacaoUpdate(BaseModel):
+    id: str
+    num_nf: str
+    produto: str
+    num_serie: str
+    descricao_defeito: str
+    status: str
+
+    @field_validator("num_nf")
+    def validar_num_nf(cls, value):
+        return validacao_nf(value)
+
+    @field_validator("produto")
+    def validar_produto(cls, value):
+        return validacao_produto(value)
+
+    @field_validator("num_serie")
+    def validar_num_serie(cls, value):
+        return validacao_num_serie(value)
+
+    @field_validator("status")
+    def validar_status(cls, value):
+        return validacao_status(value)
