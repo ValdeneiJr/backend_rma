@@ -14,6 +14,17 @@ from models.solicitacao import Solicitacao, ProdutosEnum, StatusEnum, ResultAnal
 from schemas.solicitacao_schema import SolicitacaoIn, SolicitacaoBaseOut, SolicitacaoUpdate, SolicitacaoAnalise
 
 
+async def buscar_solicitacao(id_sol: str):
+    try:
+        solicitacao = await Solicitacao.filter(id=id_sol).first()
+
+        if not solicitacao:
+            raise SolicitacaoNaoEncontradaException()
+    except BaseORMException as e:
+        raise ErroInternoException()
+
+    return sol_model_to_out(solicitacao)
+
 async def criar_solicitacao(dados_sol: SolicitacaoIn, usuario: Usuario) -> SolicitacaoBaseOut:
     await verificar_sol_existente(dados_sol.num_nf, ProdutosEnum(dados_sol.produto), dados_sol.num_serie)
 
