@@ -5,7 +5,7 @@ from tortoise.exceptions import BaseORMException
 
 from core.security.hashing import hashing_senha
 from exceptions.usuario_exception import EmailJaCadastradoException, MatriculaJaCadastradaException, \
-    UsuarioNaoEncontradoException, AdminDesativacaoException
+    UsuarioNaoEncontradoException, AdminDesativacaoException, UsuarioDesativadoException
 from exceptions.erro_interno_exception import ErroInternoException
 from mappers.usuario_mapper import usuario_model_usuario_out
 from models.usuario import RoleEnum, Usuario
@@ -20,22 +20,12 @@ async def buscar_usuario(id_usuario):
     except BaseORMException:
         raise ErroInternoException()
 
-    return UsuarioOut(
-        id= usuario.id,
-        matricula= usuario.matricula,
-        nome=usuario.nome,
-        email=usuario.email,
-        role=usuario.role,
-        status= usuario.status
-    )
+    return usuario_model_usuario_out(usuario)
 
 async def criar_usuario(dados_usuario: UsuarioIn, admin: Usuario):
 
-    if await email_cadastrado(dados_usuario.email):
-        raise EmailJaCadastradoException()
-
-    if await matricula_cadastrada(dados_usuario.matricula):
-        raise MatriculaJaCadastradaException()
+    await matricula_cadastrada(dados_usuario.matricula)
+    await email_cadastrado(dados_usuario.email)
 
     id_ = str(uuid.uuid4())
     role = RoleEnum(dados_usuario.role)
@@ -59,25 +49,31 @@ async def criar_usuario(dados_usuario: UsuarioIn, admin: Usuario):
         print(e)
         raise ErroInternoException()
 
-    return UsuarioOut(
-        id= usuario.id,
-        matricula= usuario.matricula,
-        nome=usuario.nome,
-        email=usuario.email,
-        role=usuario.role,
-        status= usuario.status
-    )
+    return usuario_model_usuario_out(usuario)
 
 async def atualizar_usuario(novos_dados: UsuarioUpdate) -> UsuarioOut:
-    atts = ['nome', 'email', 'role']
     try:
         usuario = await Usuario.filter(id=novos_dados.id).first()
 
         if not usuario:
             raise UsuarioNaoEncontradoException()
-        for att in atts:
-            setattr(usuario, att, getattr(novos_dados, att))
-        await usuario.save()
+        if not usuario.status:
+            raise UsuarioDesativadoException()
+
+        valores_atualizados = False
+
+        if novos_dados.nome != usuario.nome:
+            setattr(usuario, 'nome', novos_dados.nome)
+            valores_atualizados = True
+        if novos_dados.role != usuario.role:
+            setattr(usuario, 'role', RoleEnum(novos_dados.role))
+            valores_atualizados = True
+        if novos_dados.email != usuario.email:
+            await email_cadastrado(novos_dados.email)
+            setattr(usuario, 'email', novos_dados.email)
+            valores_atualizados = True
+        if valores_atualizados:
+            await usuario.save()
     except BaseORMException as e:
         raise ErroInternoException()
 
@@ -103,11 +99,8 @@ async def email_cadastrado(email):
         usuario = await Usuario.filter(email=email).first()
     except BaseORMException as e:
         raise ErroInternoException()
-
     if usuario:
-        return True
-
-    return False
+        raise EmailJaCadastradoException()
 
 
 async def matricula_cadastrada(matricula):
@@ -117,6 +110,4 @@ async def matricula_cadastrada(matricula):
         raise ErroInternoException()
 
     if usuario:
-        return True
-
-    return False
+        raise MatriculaJaCadastradaException()

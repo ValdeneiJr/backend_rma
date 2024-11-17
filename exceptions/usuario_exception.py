@@ -1,6 +1,6 @@
 class EmailJaCadastradoException(Exception):
     def __init__(self):
-        self.message = "Email ja cadastrado"
+        self.mensagem = "Email ja cadastrado"
 
 class LoginInvalidoException(Exception):
     def __init__(self):
@@ -17,3 +17,7 @@ class UsuarioNaoEncontradoException(Exception):
 class AdminDesativacaoException(Exception):
     def __init__(self):
         self.mensagem = "Usuario admin não pode se desativar"
+
+class UsuarioDesativadoException(Exception):
+    def __init__(self):
+        self.mensagem = "Não é possível atualizar um usuario desativado"
