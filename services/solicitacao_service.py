@@ -6,7 +6,8 @@ from tortoise.exceptions import BaseORMException
 
 from exceptions.erro_interno_exception import ErroInternoException
 from exceptions.solicitacao_exception import SolicitacaoJaCadastradaException, SolicitacaoNaoEncontradaException, \
-    SolicitacaoStatusException, SolicitacaoAnaliseException
+    SolicitacaoStatusException, SolicitacaoAnaliseException, SolicitacaoJaConcluidaException, \
+    SolicitacaoNaoPodeSerFechadaException
 from mappers.solicitacao_mapper import sol_model_to_base_out, sol_model_to_out
 from models import Usuario
 from models.solicitacao import Solicitacao, ProdutosEnum, StatusEnum, ResultAnaliseEnum
@@ -104,6 +105,28 @@ async def adicionar_analise(dados_analise: SolicitacaoAnalise, usuario: Usuario)
 
     return sol_model_to_out(solicitacao)
 
+async def concluir_solicitacao(id_solicitacao: str, usuario: Usuario):
+    try:
+        solicitacao = await Solicitacao.filter(id=id_solicitacao).first()
+
+        if not solicitacao:
+            raise SolicitacaoNaoEncontradaException()
+
+        if solicitacao.data_fechamento:
+            raise SolicitacaoJaConcluidaException()
+
+        if solicitacao.status == 'recebida' or solicitacao.status == 'em_analise':
+            raise SolicitacaoNaoPodeSerFechadaException()
+
+        setattr(solicitacao, 'status', StatusEnum.CONCLUIDA)
+        setattr(solicitacao, 'data_fechamento', date.today())
+        setattr(solicitacao, 'resp_fechamento', usuario)
+
+        await solicitacao.save()
+    except BaseORMException as e:
+        raise ErroInternoException()
+
+    return sol_model_to_out(solicitacao)
 
 async def verificar_sol_existente(num_nf: str, produto: ProdutosEnum, num_serie: str):
     try:

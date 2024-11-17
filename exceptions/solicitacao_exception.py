@@ -13,3 +13,11 @@ class SolicitacaoStatusException(Exception):
 class SolicitacaoAnaliseException(Exception):
     def __init__(self):
         self.mensagem = "Apenas o funcionario responsavel pela analise pode preencher estes dados"
+
+class SolicitacaoJaConcluidaException(Exception):
+    def __init__(self):
+        self.mensagem = "Essa solicitação ja foi concluida"
+
+class SolicitacaoNaoPodeSerFechadaException(Exception):
+    def __init__(self):
+        self.mensagem = "Essa solicitação não pode ser concluida ainda, pois não foi analisada"

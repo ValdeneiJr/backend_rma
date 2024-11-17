@@ -5,11 +5,13 @@ from starlette import status
 from core.security.security import get_current_user, RoleEnum, validar_role
 from exceptions.erro_interno_exception import ErroInternoException
 from exceptions.solicitacao_exception import SolicitacaoJaCadastradaException, SolicitacaoNaoEncontradaException, \
-    SolicitacaoStatusException, SolicitacaoAnaliseException
+    SolicitacaoStatusException, SolicitacaoAnaliseException, SolicitacaoJaConcluidaException, \
+    SolicitacaoNaoPodeSerFechadaException
 from models import Usuario
 from schemas.solicitacao_schema import SolicitacaoIn, SolicitacaoBaseOut, SolicitacaoUpdate, SolicitacaoOut, \
     SolicitacaoAnalise
-from services.solicitacao_service import criar_solicitacao, atualizar_solicitacao, adicionar_analise
+from services.solicitacao_service import criar_solicitacao, atualizar_solicitacao, adicionar_analise, \
+    concluir_solicitacao
 
 solicitacao_router = APIRouter(prefix='/request')
 
@@ -48,6 +50,22 @@ async def insert_analysis(dados_analise: SolicitacaoAnalise, usuario_corrente: U
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e.mensagem))
     except SolicitacaoAnaliseException as e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e.mensagem))
+    except ErroInternoException as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e.mensagem))
+
+    return solicitacao
+
+@solicitacao_router.patch("/finalize/{id_sol}", status_code=status.HTTP_200_OK, response_model=SolicitacaoOut)
+async def close_request(id_sol: str, usuario_corrente: Usuario = Depends(get_current_user)):
+    validar_role(usuario_corrente, RoleEnum.FUNC)
+    try:
+        solicitacao = await concluir_solicitacao(id_sol, usuario_corrente)
+    except SolicitacaoNaoEncontradaException as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e.mensagem))
+    except SolicitacaoJaConcluidaException as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e.mensagem))
+    except SolicitacaoNaoPodeSerFechadaException as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e.mensagem))
     except ErroInternoException as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e.mensagem))
 
